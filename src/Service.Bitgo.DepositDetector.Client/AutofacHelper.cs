@@ -10,7 +10,7 @@ namespace Service.Bitgo.DepositDetector.Client
 {
     public static class AutofacHelper
     {
-        public static void RegisterClientRegistrationPublisher(this ContainerBuilder builder, MyServiceBusTcpClient client)
+        public static void RegisterSignalBitGoTransferPublisher(this ContainerBuilder builder, MyServiceBusTcpClient client)
         {
             builder
                 .RegisterInstance(new ClientRegistrationServiceBusPublisher(client))
