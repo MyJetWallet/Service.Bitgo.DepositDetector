@@ -20,13 +20,17 @@ namespace Service.Bitgo.DepositDetector.ServiceBus
             string queueName,
             TopicQueueType queryType)
         {
-
             client.Subscribe(SignalBitGoTransfer.ServiceBusTopicName, queueName, queryType, Handler);
         }
 
         private async ValueTask Handler(IMyServiceBusMessage data)
         {
             var item = Deserializer(data.Data);
+
+            if (!_list.Any())
+            {
+                throw new Exception("Cannot handle event. No subscribers");
+            }
 
             foreach (var callback in _list)
             {

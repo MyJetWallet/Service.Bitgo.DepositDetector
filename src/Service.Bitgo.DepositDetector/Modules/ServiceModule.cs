@@ -70,14 +70,14 @@ namespace Service.Bitgo.DepositDetector.Modules
                 .As<ISubscriber<SignalBitGoTransfer>>()
                 .SingleInstance();
 
-            //builder
-            //    .RegisterType<SignalBitGoTransferJob>()
-            //    .AutoActivate()
-            //    .SingleInstance();
+            builder
+                .RegisterType<SignalBitGoTransferJob>()
+                .AutoActivate()
+                .SingleInstance();
 
-            //builder
-            //    .RegisterType<BitgoDepositTransferProcessService>()
-            //    .As<IBitgoDepositTransferProcessService>();
+            builder
+                .RegisterType<BitgoDepositTransferProcessService>()
+                .As<IBitgoDepositTransferProcessService>();
         }
 
         
