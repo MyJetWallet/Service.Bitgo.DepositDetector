@@ -29,5 +29,8 @@ namespace Service.Bitgo.DepositDetector.Settings
 
         [YamlProperty("BitgoDepositDetector.BitGoWalletIds")]
         public string BitGoWalletIds { get; set; }
+
+        [YamlProperty("BitgoDepositDetector.BitGoCoinConformationRequirements")]
+        public string BitGoCoinConformationRequirements { get; set; }
     }
 }

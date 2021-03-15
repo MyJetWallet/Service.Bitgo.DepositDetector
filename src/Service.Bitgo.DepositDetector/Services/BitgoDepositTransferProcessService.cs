@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -23,6 +24,7 @@ namespace Service.Bitgo.DepositDetector.Services
         private readonly IBitGoClient _bitgoClient;
         private readonly string[] _walletIds;
         private readonly string _walletIdsSettings;
+        private readonly Dictionary<string, int> _conformationRequirements = new Dictionary<string, int>();
 
         public BitgoDepositTransferProcessService(ILogger<BitgoDepositTransferProcessService> logger,
             IAssetMapper assetMapper,
@@ -46,6 +48,23 @@ namespace Service.Bitgo.DepositDetector.Services
             else
             {
                 _walletIds = new string[] { };
+            }
+
+            if (!string.IsNullOrEmpty(settingsModel.BitGoCoinConformationRequirements))
+            {
+                var pairs = settingsModel.BitGoCoinConformationRequirements.Split(';');
+                foreach (var pair in pairs)
+                {
+                    var coinValue = pair.Split('=');
+                    if (coinValue.Length==2)
+                    {
+                        _conformationRequirements[coinValue[0]] = int.Parse(coinValue[1]);
+                    }
+                    else
+                    {
+                        throw new Exception($"Cannot read BitGoCoinConformationRequirements, pair '{pair}'");
+                    }
+                }
             }
         }
 
@@ -71,6 +90,16 @@ namespace Service.Bitgo.DepositDetector.Services
             }
 
             _logger.LogInformation("Transfer fromm BitGo: {transferJson}", JsonConvert.SerializeObject(transfer));
+
+            if (_conformationRequirements.TryGetValue(transfer.Coin, out var requirement))
+            {
+                if (transfer.Confirmations < requirement)
+                {
+                    _logger.LogError($"Transaction do not has enough conformations. Transaction has: {transfer.Confirmations}, requirement: {requirement}");
+                    throw new Exception($"Transaction do not has enough conformations. Transaction has: {transfer.Confirmations}, requirement: {requirement}");
+                }
+            }
+            //transfer.Confirmations
 
             if (!_walletIds.Contains(transfer.WalletId))
             {
