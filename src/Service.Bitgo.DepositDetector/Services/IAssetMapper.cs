@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Service.AssetsDictionary.Client;
 using Service.AssetsDictionary.Domain.Models;
+using Service.Bitgo.DepositDetector.Settings;
 
 namespace Service.Bitgo.DepositDetector.Services
 {
@@ -16,36 +17,36 @@ namespace Service.Bitgo.DepositDetector.Services
     {
         public Dictionary<string, double> AccuracyByAsset = new Dictionary<string, double>()
         {
-            { "algo", Math.Pow(10, 0) },
-            { "bch", Math.Pow(10, 0) },
-            { "btc", Math.Pow(10, 0) },
-            { "dash", Math.Pow(10, 0) },
-            { "eos", Math.Pow(10, 0) },
-            { "eth", Math.Pow(10, 0) },
-            { "hbar", Math.Pow(10, 0) },
-            { "ltc", Math.Pow(10, 0) },
-            { "trx", Math.Pow(10, 0) },
+            { "algo", Math.Pow(10, 6) },
+            { "bch", Math.Pow(10, 8) },
+            { "btc", Math.Pow(10, 8) },
+            { "dash", Math.Pow(10, 6) },
+            { "eos", Math.Pow(10, 4) },
+            //{ "eth", Math.Pow(10, 18) },
+            //{ "hbar", Math.Pow(10, 0) },
+            { "ltc", Math.Pow(10, 8) },
+            { "trx", Math.Pow(10, 6) },
             { "xlm", Math.Pow(10, 7) },
-            { "xrp", Math.Pow(10, 0) },
-            { "zec", Math.Pow(10, 0) },
+            { "xrp", Math.Pow(10, 6) },
+            { "zec", Math.Pow(10, 8) },
 
-            { "talgo", Math.Pow(10, 0) },
-            { "tbch", Math.Pow(10, 0) },
-            { "tbtc", Math.Pow(10, 0) },
-            { "tdash", Math.Pow(10, 0) },
-            { "teos", Math.Pow(10, 0) },
-            { "teth", Math.Pow(10, 0) },
-            { "thbar", Math.Pow(10, 0) },
-            { "tltc", Math.Pow(10, 0) },
-            { "ttrx", Math.Pow(10, 0) },
+            { "talgo", Math.Pow(10, 6) },
+            { "tbch", Math.Pow(10, 8) },
+            { "tbtc", Math.Pow(10, 8) },
+            { "tdash", Math.Pow(10, 6) },
+            { "teos", Math.Pow(10, 4) },
+            //{ "teth", Math.Pow(10, 18) },
+            //{ "thbar", Math.Pow(10, 0) },
+            { "tltc", Math.Pow(10, 8) },
+            { "ttrx", Math.Pow(10, 6) },
             { "txlm", Math.Pow(10, 7) },
-            { "txrp", Math.Pow(10, 0) },
-            { "tzec", Math.Pow(10, 0) },
+            { "txrp", Math.Pow(10, 6) },
+            { "tzec", Math.Pow(10, 8) },
         };
 
         private readonly IAssetsDictionaryClient _assetsDictionaryClient;
 
-        public AssetMapper(IAssetsDictionaryClient assetsDictionaryClient)
+        public AssetMapper(IAssetsDictionaryClient assetsDictionaryClient, SettingsModel settingsModel)
         {
             _assetsDictionaryClient = assetsDictionaryClient;
         }
