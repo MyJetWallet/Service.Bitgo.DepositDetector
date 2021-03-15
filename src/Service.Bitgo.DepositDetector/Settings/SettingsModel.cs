@@ -26,5 +26,8 @@ namespace Service.Bitgo.DepositDetector.Settings
 
         [YamlProperty("BitgoDepositDetector.SpotServiceBusHostPort")]
         public string SpotServiceBusHostPort { get; set; }
+
+        [YamlProperty("BitgoDepositDetector.BitGoWalletIds")]
+        public string BitGoWalletIds { get; set; }
     }
 }

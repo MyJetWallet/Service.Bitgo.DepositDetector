@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Service.AssetsDictionary.Client;
 using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
+using Service.Bitgo.DepositDetector.Settings;
 using Service.ChangeBalanceGateway.Grpc;
 using Service.ChangeBalanceGateway.Grpc.Models;
 
@@ -20,18 +21,32 @@ namespace Service.Bitgo.DepositDetector.Services
         private readonly ISpotChangeBalanceService _changeBalanceService;
         private readonly IWalletMapper _walletMapper;
         private readonly IBitGoClient _bitgoClient;
+        private readonly string[] _walletIds;
+        private readonly string _walletIdsSettings;
 
         public BitgoDepositTransferProcessService(ILogger<BitgoDepositTransferProcessService> logger,
             IAssetMapper assetMapper,
             ISpotChangeBalanceService changeBalanceService,
             IWalletMapper walletMapper,
-            IBitGoClient bitgoClient)
+            IBitGoClient bitgoClient,
+            SettingsModel settingsModel)
         {
             _logger = logger;
             _assetMapper = assetMapper;
             _changeBalanceService = changeBalanceService;
             _walletMapper = walletMapper;
             _bitgoClient = bitgoClient;
+            _walletIdsSettings = settingsModel.BitGoWalletIds;
+            
+            var walletIdString = _walletIdsSettings;
+            if (!string.IsNullOrEmpty(walletIdString))
+            {
+                _walletIds = walletIdString.Split(';');
+            }
+            else
+            {
+                _walletIds = new string[] { };
+            }
         }
 
         public async Task HandledDepositAsync(SignalBitGoTransfer transferId)
@@ -56,6 +71,12 @@ namespace Service.Bitgo.DepositDetector.Services
             }
 
             _logger.LogInformation("Transfer fromm BitGo: {transferJson}", JsonConvert.SerializeObject(transfer));
+
+            if (!_walletIds.Contains(transfer.WalletId))
+            {
+                _logger.LogInformation("Transfer {transferIdString} fromm BitGo is skipped, Wallet do not include in enabled wallet list {walletListText}", transfer.TransferId, _walletIdsSettings);
+                return;
+            }
 
             foreach (var entryGroup in transfer.Entries
                 .Where(e => e.Value > 0 && !string.IsNullOrEmpty(e.Label) && e.WalletId == transferId.WalletId && e.Token == null)
