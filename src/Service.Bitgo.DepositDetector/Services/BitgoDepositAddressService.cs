@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.BitGo;
+using MyJetWallet.BitGo.Settings.Services;
 using MyJetWallet.Domain;
 using MyJetWallet.Domain.Assets;
 using MyNoSqlServer.Abstractions;
@@ -10,7 +11,6 @@ using Newtonsoft.Json;
 using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
 using Service.Bitgo.DepositDetector.NoSql;
-using Service.ChangeBalanceGateway.Grpc;
 
 namespace Service.Bitgo.DepositDetector.Services
 {
@@ -40,7 +40,7 @@ namespace Service.Bitgo.DepositDetector.Services
         {
             try
             {
-                var (bitgoWalletId, bitgoCoin) = _assetMapper.GetAssetToBitGoAsync(new AssetIdentity(){BrokerId = request.BrokerId, Symbol = request.AssetSymbol });
+                var (bitgoWalletId, bitgoCoin) = _assetMapper.AssetToBitgoCoinAndWallet(request.BrokerId, request.AssetSymbol);
 
                 if (string.IsNullOrEmpty(bitgoWalletId) || string.IsNullOrEmpty(bitgoCoin))
                 {

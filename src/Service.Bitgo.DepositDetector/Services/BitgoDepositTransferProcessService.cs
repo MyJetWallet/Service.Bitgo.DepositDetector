@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.BitGo;
+using MyJetWallet.BitGo.Settings.Services;
 using Newtonsoft.Json;
-using Service.AssetsDictionary.Client;
 using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
 using Service.Bitgo.DepositDetector.Settings;
@@ -72,9 +72,9 @@ namespace Service.Bitgo.DepositDetector.Services
         {
             _logger.LogInformation("Request to handle transfer fromm BitGo: {transferJson}", JsonConvert.SerializeObject(transferId));
 
-            var asset = _assetMapper.GetAssetForBitGoAsync(transferId.Coin, transferId.WalletId);
+            var (brokerId, assetSymbol) = _assetMapper.BitgoCoinToAsset(transferId.Coin, transferId.WalletId);
 
-            if (asset == null)
+            if (string.IsNullOrEmpty(brokerId) || string.IsNullOrEmpty(assetSymbol))
             {
                 _logger.LogWarning("Cannot handle BitGo deposit, asset do not found {transferJson}", JsonConvert.SerializeObject(transferId));
                 return;
@@ -126,7 +126,7 @@ namespace Service.Bitgo.DepositDetector.Services
                     WalletId = wallet.WalletId,
                     ClientId = wallet.ClientId,
                     Amount = _assetMapper.ConvertAmountFromBitgo(transferId.Coin, amount),
-                    AssetSymbol = asset.Symbol,
+                    AssetSymbol = assetSymbol,
                     BrokerId = wallet.BrokerId,
                     Integration = "BitGo",
                     TransactionId = $"{transfer.TransferId}:{wallet.WalletId}",

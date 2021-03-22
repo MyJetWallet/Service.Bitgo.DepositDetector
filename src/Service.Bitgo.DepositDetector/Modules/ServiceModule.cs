@@ -4,6 +4,7 @@ using Autofac.Core.Registration;
 using DotNetCoreDecorators;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.BitGo;
+using MyJetWallet.BitGo.Settings.Ioc;
 using MyJetWallet.Domain.ServiceBus.Serializers;
 using MyJetWallet.Sdk.Service;
 using MyNoSqlServer.Abstractions;
@@ -48,15 +49,8 @@ namespace Service.Bitgo.DepositDetector.Modules
                 .As<IBitGoClient>()
                 .SingleInstance();
 
-            builder
-                .RegisterType<WalletMapper>()
-                .As<IWalletMapper>()
-                .SingleInstance();
-
-            builder
-                .RegisterType<AssetMapper>()
-                .As<IAssetMapper>()
-                .SingleInstance();
+            builder.RegisterBitgoSettingsReader(myNoSqlClient);
+            builder.RegisterBitgoSettingsReader(myNoSqlClient);
 
 
 
