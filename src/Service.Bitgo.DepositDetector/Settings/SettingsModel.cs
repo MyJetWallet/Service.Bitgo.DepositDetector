@@ -12,6 +12,9 @@ namespace Service.Bitgo.DepositDetector.Settings
         [YamlProperty("BitgoDepositDetector.MyNoSqlReaderHostPort")]
         public string MyNoSqlReaderHostPort { get; set; }
 
+        [YamlProperty("BitgoDepositDetector.MyNoSqlWriterUrl")]
+        public string MyNoSqlWriterUrl { get; set; }
+
         [YamlProperty("BitgoDepositDetector.ChangeBalanceGatewayGrpcServiceUrl")]
         public string ChangeBalanceGatewayGrpcServiceUrl { get; set; }
 
@@ -32,5 +35,8 @@ namespace Service.Bitgo.DepositDetector.Settings
 
         [YamlProperty("BitgoDepositDetector.BitGoCoinConformationRequirements")]
         public string BitGoCoinConformationRequirements { get; set; }
+
+        [YamlProperty("BitgoDepositDetector.MaxClientInCache")]
+        public int MaxClientInCache { get; set; }
     }
 }

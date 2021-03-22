@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MyJetWallet.Domain.Assets;
 using Service.AssetsDictionary.Client;
 using Service.AssetsDictionary.Domain.Models;
 using Service.Bitgo.DepositDetector.Settings;
@@ -10,6 +11,7 @@ namespace Service.Bitgo.DepositDetector.Services
     public interface IAssetMapper
     {
         IAsset GetAssetForBitGoAsync(string coin, string walletId);
+        (string, string) GetAssetToBitGoAsync(IAssetIdentity assetId);
         double ConvertAmountFromBitgo(string coin, long amount);
     }
 
@@ -58,6 +60,16 @@ namespace Service.Bitgo.DepositDetector.Services
             var asset = _assetsDictionaryClient.GetAllAssets().FirstOrDefault(e => e.BrokerId == Program.Settings.DefaultBrokerId && e.Symbol == symbol);
 
             return asset;
+        }
+
+        public (string, string) GetAssetToBitGoAsync(IAssetIdentity assetId)
+        {
+            switch (assetId.Symbol)
+            {
+                case "BTC": return ("6054ba9ca9cc0e0024a867a7d8b401b2", "tbtc");
+            }
+
+            return (null, null);
         }
 
         public double ConvertAmountFromBitgo(string coin, long amount)

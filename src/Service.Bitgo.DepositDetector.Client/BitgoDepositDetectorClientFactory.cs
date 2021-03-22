@@ -22,6 +22,8 @@ namespace Service.Bitgo.DepositDetector.Client
         }
 
         public IBitgoDepositTransferProcessService GetBitgoDepositTransferProcessService() => _channel.CreateGrpcService<IBitgoDepositTransferProcessService>();
+
+        public IBitgoDepositAddressService GetBitgoDepositAddressService() => _channel.CreateGrpcService<IBitgoDepositAddressService>();
     }
 
 

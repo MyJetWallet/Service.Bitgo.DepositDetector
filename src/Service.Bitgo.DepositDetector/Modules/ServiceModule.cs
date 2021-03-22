@@ -6,12 +6,15 @@ using Microsoft.Extensions.Logging;
 using MyJetWallet.BitGo;
 using MyJetWallet.Domain.ServiceBus.Serializers;
 using MyJetWallet.Sdk.Service;
+using MyNoSqlServer.Abstractions;
 using MyNoSqlServer.DataReader;
+using MyNoSqlServer.DataWriter;
 using MyServiceBus.Abstractions;
 using MyServiceBus.TcpClient;
 using Service.AssetsDictionary.Client;
 using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
+using Service.Bitgo.DepositDetector.NoSql;
 using Service.Bitgo.DepositDetector.ServiceBus;
 using Service.Bitgo.DepositDetector.Services;
 using Service.ChangeBalanceGateway.Client;
@@ -78,6 +81,13 @@ namespace Service.Bitgo.DepositDetector.Modules
             builder
                 .RegisterType<BitgoDepositTransferProcessService>()
                 .As<IBitgoDepositTransferProcessService>();
+
+
+            builder
+                .RegisterInstance(new MyNoSqlServerDataWriter<DepositAddressEntity>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl), DepositAddressEntity.TableName, true))
+                .As<IMyNoSqlServerDataWriter<DepositAddressEntity>>()
+                .SingleInstance()
+                .AutoActivate();
         }
 
         
