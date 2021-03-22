@@ -50,9 +50,6 @@ namespace Service.Bitgo.DepositDetector.Modules
                 .SingleInstance();
 
             builder.RegisterBitgoSettingsReader(myNoSqlClient);
-            builder.RegisterBitgoSettingsReader(myNoSqlClient);
-
-
 
             ServiceBusLogger = Program.LogFactory.CreateLogger(nameof(MyServiceBusTcpClient));
 
