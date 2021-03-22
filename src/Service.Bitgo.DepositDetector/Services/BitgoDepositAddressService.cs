@@ -40,7 +40,7 @@ namespace Service.Bitgo.DepositDetector.Services
         {
             try
             {
-                var (bitgoWalletId, bitgoCoin) = _assetMapper.AssetToBitgoCoinAndWallet(request.BrokerId, request.AssetSymbol);
+                var (bitgoCoin, bitgoWalletId) = _assetMapper.AssetToBitgoCoinAndWallet(request.BrokerId, request.AssetSymbol);
 
                 if (string.IsNullOrEmpty(bitgoWalletId) || string.IsNullOrEmpty(bitgoCoin))
                 {
