@@ -49,6 +49,8 @@ namespace Service.Bitgo.DepositDetector
             {
                 endpoints.MapGrpcSchema<BitgoDepositTransferProcessService, IBitgoDepositTransferProcessService>();
 
+                endpoints.MapGrpcSchema<BitgoDepositAddressService, IBitgoDepositAddressService>();
+
                 endpoints.MapGrpcSchemaRegistry();
 
                 endpoints.MapGet("/", async context =>
