@@ -13,14 +13,6 @@ namespace Service.Bitgo.DepositDetector.Client
 {
     public static class AutofacHelper
     {
-        public static void RegisterSignalBitGoTransferPublisher(this ContainerBuilder builder, MyServiceBusTcpClient client)
-        {
-            builder
-                .RegisterInstance(new ClientRegistrationServiceBusPublisher(client))
-                .As<IPublisher<SignalBitGoTransfer>>()
-                .SingleInstance();
-        }
-
         public static void RegisterBitgoDepositDetectorClient(this ContainerBuilder builder, string bitgoDepositDetectorGrpcServiceUrl)
         {
             var factory = new BitgoDepositDetectorClientFactory(bitgoDepositDetectorGrpcServiceUrl);
@@ -44,7 +36,5 @@ namespace Service.Bitgo.DepositDetector.Client
                 .As<IBitgoDepositAddressService>()
                 .SingleInstance();
         }
-
-
     }
 }

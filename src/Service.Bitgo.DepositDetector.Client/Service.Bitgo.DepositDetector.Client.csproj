@@ -19,7 +19,7 @@
     <PackageReference Include="MyServiceBus.TcpClient" Version="2.4.2" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.8.1" />
     <PackageReference Include="protobuf-net.Grpc" Version="1.0.152" />
-    <PackageReference Include="MyJetWallet.Domain.ServiceBus" Version="1.0.6" />
+    <PackageReference Include="MyJetWallet.Domain.ServiceBus" Version="1.1.0" />
   </ItemGroup>
 
   <PropertyGroup>

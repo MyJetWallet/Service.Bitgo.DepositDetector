@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
 using Service.Bitgo.DepositDetector.Settings;
+using Service.Bitgo.Webhooks.Domain.Models;
 using Service.ChangeBalanceGateway.Grpc;
 using Service.ChangeBalanceGateway.Grpc.Models;
 

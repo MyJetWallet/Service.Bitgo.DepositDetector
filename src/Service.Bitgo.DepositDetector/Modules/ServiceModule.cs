@@ -18,6 +18,7 @@ using Service.Bitgo.DepositDetector.Grpc;
 using Service.Bitgo.DepositDetector.NoSql;
 using Service.Bitgo.DepositDetector.ServiceBus;
 using Service.Bitgo.DepositDetector.Services;
+using Service.Bitgo.Webhooks.Client;
 using Service.ChangeBalanceGateway.Client;
 
 namespace Service.Bitgo.DepositDetector.Modules
@@ -60,9 +61,7 @@ namespace Service.Bitgo.DepositDetector.Modules
             serviceBusClient.SocketLogs.AddLogException((context, exception) => ServiceBusLogger.LogInformation(exception, $"MyServiceBusTcpClient[Socket {context?.Id}|{context?.ContextName}|{context?.Inited}][Exception] {exception.Message}"));
             builder.RegisterInstance(serviceBusClient).AsSelf().SingleInstance();
 
-            builder.RegisterInstance(new SignalBitGoTransferSubscriber(serviceBusClient, "Bitgo-DepositDetector", TopicQueueType.Permanent))
-                .As<ISubscriber<SignalBitGoTransfer>>()
-                .SingleInstance();
+            builder.RegisterSignalBitGoTransferSubscriber(serviceBusClient, "Bitgo-DepositDetector", TopicQueueType.Permanent);
 
             builder
                 .RegisterType<SignalBitGoTransferJob>()

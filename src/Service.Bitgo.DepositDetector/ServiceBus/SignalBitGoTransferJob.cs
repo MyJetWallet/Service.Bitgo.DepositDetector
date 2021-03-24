@@ -3,6 +3,7 @@ using DotNetCoreDecorators;
 using Microsoft.Extensions.Logging;
 using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
+using Service.Bitgo.Webhooks.Domain.Models;
 
 namespace Service.Bitgo.DepositDetector.ServiceBus
 {
