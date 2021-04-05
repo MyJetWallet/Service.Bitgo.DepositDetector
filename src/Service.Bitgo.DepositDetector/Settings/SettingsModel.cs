@@ -38,5 +38,8 @@ namespace Service.Bitgo.DepositDetector.Settings
 
         [YamlProperty("BitgoDepositDetector.MaxClientInCache")]
         public int MaxClientInCache { get; set; }
+
+        [YamlProperty("BitgoDepositDetector.ZipkinUrl")]
+        public string ZipkinUrl { get; set; }
     }
 }

@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using DotNetCoreDecorators;
 using Microsoft.Extensions.Logging;
+using MyJetWallet.Sdk.Service;
 using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
 using Service.Bitgo.Webhooks.Domain.Models;
@@ -19,7 +21,17 @@ namespace Service.Bitgo.DepositDetector.ServiceBus
 
         private async ValueTask HandleSignal(SignalBitGoTransfer signal)
         {
-            await _service.HandledDepositAsync(signal);
+            using var activity = MyTelemetry.StartActivity("Handle Event SignalBitGoTransfer");
+            try
+            {
+                await _service.HandledDepositAsync(signal);
+            }
+            catch(Exception ex)
+            {
+                ex.FailActivity();
+                throw;
+
+            }
         }
     }
 }

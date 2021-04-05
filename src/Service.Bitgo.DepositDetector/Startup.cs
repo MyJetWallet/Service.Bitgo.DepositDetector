@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Autofac;
 using MyJetWallet.Sdk.GrpcMetrics;
 using MyJetWallet.Sdk.GrpcSchema;
+using MyJetWallet.Sdk.Service;
 using Prometheus;
 using ProtoBuf.Grpc.Server;
 using Service.Bitgo.DepositDetector.Grpc;
@@ -28,6 +29,8 @@ namespace Service.Bitgo.DepositDetector
             });
 
             services.AddHostedService<ApplicationLifetimeManager>();
+
+            services.AddMyTelemetry(Program.Settings.ZipkinUrl);
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

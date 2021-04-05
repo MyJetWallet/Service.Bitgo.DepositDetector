@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.BitGo;
 using MyJetWallet.BitGo.Settings.Services;
+using MyJetWallet.Sdk.Service;
 using Newtonsoft.Json;
+using OpenTelemetry.Trace;
 using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
 using Service.Bitgo.DepositDetector.Settings;
@@ -71,6 +74,8 @@ namespace Service.Bitgo.DepositDetector.Services
 
         public async Task HandledDepositAsync(SignalBitGoTransfer transferId)
         {
+            transferId.AddToActivityAsJsonTag("bitgo signal");
+
             _logger.LogInformation("Request to handle transfer fromm BitGo: {transferJson}", JsonConvert.SerializeObject(transferId));
 
             var (brokerId, assetSymbol) = _assetMapper.BitgoCoinToAsset(transferId.Coin, transferId.WalletId);
@@ -87,8 +92,11 @@ namespace Service.Bitgo.DepositDetector.Services
             if (transfer == null)
             {
                 _logger.LogWarning("Cannot handle BitGo deposit, transfer do not found {transferJson}", JsonConvert.SerializeObject(transferId));
+                Activity.Current?.SetStatus(Status.Error);
                 return;
             }
+
+            transfer.AddToActivityAsJsonTag("bitgo-transfer");
 
             _logger.LogInformation("Transfer fromm BitGo: {transferJson}", JsonConvert.SerializeObject(transfer));
 
@@ -97,6 +105,7 @@ namespace Service.Bitgo.DepositDetector.Services
                 if (transfer.Confirmations < requirement)
                 {
                     _logger.LogError($"Transaction do not has enough conformations. Transaction has: {transfer.Confirmations}, requirement: {requirement}");
+                    Activity.Current?.SetStatus(Status.Error);
                     throw new Exception($"Transaction do not has enough conformations. Transaction has: {transfer.Confirmations}, requirement: {requirement}");
                 }
             }
@@ -105,6 +114,7 @@ namespace Service.Bitgo.DepositDetector.Services
             if (!_walletIds.Contains(transfer.WalletId))
             {
                 _logger.LogInformation("Transfer {transferIdString} fromm BitGo is skipped, Wallet do not include in enabled wallet list {walletListText}", transfer.TransferId, _walletIdsSettings);
+                Activity.Current?.SetStatus(Status.Error);
                 return;
             }
 
@@ -119,6 +129,9 @@ namespace Service.Bitgo.DepositDetector.Services
                     _logger.LogWarning("Cannot found wallet for transfer entry with label={label} address={address}", label, entryGroup.First().Address);
                     continue;
                 }
+
+                wallet.WalletId.AddToActivityAsTag("walletId");
+                wallet.ClientId.AddToActivityAsTag("clientId");
 
                 var amount = entryGroup.Sum(e => e.Value);
 
@@ -139,6 +152,7 @@ namespace Service.Bitgo.DepositDetector.Services
                 if (!resp.Result)
                 {
                     _logger.LogError("Cannot deposit to ME. Error: {errorText}", resp.ErrorMessage);
+                    Activity.Current?.SetStatus(Status.Error);
                     throw new Exception($"Cannot deposit to ME. Error: {resp.ErrorMessage}");
                 }
             }
