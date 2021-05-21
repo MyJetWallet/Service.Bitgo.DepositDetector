@@ -1,5 +1,4 @@
-﻿using MyJetWallet.BitGo;
-using SimpleTrading.SettingsReader;
+﻿using SimpleTrading.SettingsReader;
 
 namespace Service.Bitgo.DepositDetector.Settings
 {
@@ -29,12 +28,6 @@ namespace Service.Bitgo.DepositDetector.Settings
 
         [YamlProperty("BitgoDepositDetector.SpotServiceBusHostPort")]
         public string SpotServiceBusHostPort { get; set; }
-
-        [YamlProperty("BitgoDepositDetector.BitGoWalletIds")]
-        public string BitGoWalletIds { get; set; }
-
-        [YamlProperty("BitgoDepositDetector.BitGoCoinConformationRequirements")]
-        public string BitGoCoinConformationRequirements { get; set; }
 
         [YamlProperty("BitgoDepositDetector.MaxClientInCache")]
         public int MaxClientInCache { get; set; }
