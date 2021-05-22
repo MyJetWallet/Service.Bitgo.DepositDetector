@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-using System;
+﻿using System;
 using System.Net;
 using Autofac.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.Sdk.Service;
 using Service.Bitgo.DepositDetector.Settings;
@@ -14,7 +14,7 @@ namespace Service.Bitgo.DepositDetector
 {
     public class Program
     {
-        public const string SettingsFileName = ".myjetwallet-1";
+        public const string SettingsFileName = ".myjetwallet";
 
         public static SettingsModel Settings { get; private set; }
 
@@ -56,8 +56,9 @@ namespace Service.Bitgo.DepositDetector
             }
         }
 
-        public static IHostBuilder CreateHostBuilder(ILoggerFactory loggerFactory, string[] args) =>
-            Host.CreateDefaultBuilder(args)
+        public static IHostBuilder CreateHostBuilder(ILoggerFactory loggerFactory, string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
                 .UseServiceProviderFactory(new AutofacServiceProviderFactory())
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
@@ -80,5 +81,6 @@ namespace Service.Bitgo.DepositDetector
                     services.AddSingleton(loggerFactory);
                     services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
                 });
+        }
     }
 }
