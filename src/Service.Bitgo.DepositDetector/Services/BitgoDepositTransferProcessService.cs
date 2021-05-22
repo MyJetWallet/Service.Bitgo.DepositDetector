@@ -78,7 +78,7 @@ namespace Service.Bitgo.DepositDetector.Services
                     $"Transaction do not has enough conformations. Transaction has: {transfer.Confirmations}, requirement: {requirement}");
             }
 
-            if (!_assetMapper.IsWalletEnabled(assetSymbol, transfer.WalletId))
+            if (!_assetMapper.IsWalletEnabled(transfer.Coin, transfer.WalletId))
             {
                 _logger.LogError(
                     "Transfer {transferIdString} from BitGo is skipped, Wallet do not include in enabled wallet list",
