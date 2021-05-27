@@ -40,7 +40,7 @@ namespace Service.Bitgo.DepositDetector.Services
         {
             transferId.AddToActivityAsJsonTag("bitgo signal");
 
-            _logger.LogInformation("Request to handle transfer fromm BitGo: {transferJson}",
+            _logger.LogInformation("Request to handle transfer from BitGo: {transferJson}",
                 JsonConvert.SerializeObject(transferId));
 
             var (brokerId, assetSymbol) = _assetMapper.BitgoCoinToAsset(transferId.Coin, transferId.WalletId);
@@ -66,7 +66,7 @@ namespace Service.Bitgo.DepositDetector.Services
 
             transfer.AddToActivityAsJsonTag("bitgo-transfer");
 
-            _logger.LogInformation("Transfer fromm BitGo: {transferJson}", JsonConvert.SerializeObject(transfer));
+            _logger.LogInformation("Transfer from BitGo: {transferJson}", JsonConvert.SerializeObject(transfer));
 
             var requirement = _assetMapper.GetRequiredConfirmations(transfer.Coin);
             if (transfer.Confirmations < requirement)
@@ -89,7 +89,7 @@ namespace Service.Bitgo.DepositDetector.Services
 
             foreach (var entryGroup in transfer.Entries
                 .Where(e => e.Value > 0 && !string.IsNullOrEmpty(e.Label) && e.WalletId == transferId.WalletId &&
-                            e.Token == null)
+                            (e.Token == null || e.Token == transferId.Coin))
                 .GroupBy(e => e.Label))
             {
                 var label = entryGroup.Key;
@@ -129,7 +129,7 @@ namespace Service.Bitgo.DepositDetector.Services
                 }
             }
 
-            _logger.LogInformation("Transfer fromm BitGo {transferIdString} is handled", transfer.TransferId);
+            _logger.LogInformation("Transfer from BitGo {transferIdString} is handled", transfer.TransferId);
         }
     }
 }
