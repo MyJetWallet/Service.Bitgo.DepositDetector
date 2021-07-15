@@ -3,24 +3,26 @@ using Microsoft.Extensions.Logging;
 using MyJetWallet.Sdk.Service;
 using MyNoSqlServer.DataReader;
 using MyServiceBus.TcpClient;
+using Service.Bitgo.DepositDetector.Jobs;
 
 namespace Service.Bitgo.DepositDetector
 {
     public class ApplicationLifetimeManager : ApplicationLifetimeManagerBase
     {
+        private readonly DepositsProcessingJob _depositsProcessingJob;
         private readonly ILogger<ApplicationLifetimeManager> _logger;
         private readonly MyNoSqlTcpClient _myNoSqlClient;
         private readonly MyServiceBusTcpClient _myServiceBusTcpClient;
 
         public ApplicationLifetimeManager(IHostApplicationLifetime appLifetime,
-            ILogger<ApplicationLifetimeManager> logger,
-            MyNoSqlTcpClient myNoSqlClient,
-            MyServiceBusTcpClient myServiceBusTcpClient)
-            : base(appLifetime)
+            ILogger<ApplicationLifetimeManager> logger, MyNoSqlTcpClient myNoSqlClient,
+            MyServiceBusTcpClient myServiceBusTcpClient, DepositsProcessingJob depositsProcessingJob) : base(
+            appLifetime)
         {
             _logger = logger;
             _myNoSqlClient = myNoSqlClient;
             _myServiceBusTcpClient = myServiceBusTcpClient;
+            _depositsProcessingJob = depositsProcessingJob;
         }
 
         protected override void OnStarted()
@@ -30,6 +32,8 @@ namespace Service.Bitgo.DepositDetector
             _logger.LogInformation("MyNoSqlTcpClient is started");
             _myServiceBusTcpClient.Start();
             _logger.LogInformation("MyServiceBusTcpClient is started");
+            _depositsProcessingJob.Start();
+            _logger.LogInformation("DepositsProcessingJob is started");
         }
 
         protected override void OnStopping()
@@ -39,6 +43,8 @@ namespace Service.Bitgo.DepositDetector
             _logger.LogInformation("MyNoSqlTcpClient is stopped");
             _myServiceBusTcpClient.Stop();
             _logger.LogInformation("MyServiceBusTcpClient is stopped");
+            _depositsProcessingJob.Stop();
+            _logger.LogInformation("DepositsProcessingJob is stopped");
         }
 
         protected override void OnStopped()
