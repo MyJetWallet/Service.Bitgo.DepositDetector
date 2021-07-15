@@ -2,6 +2,7 @@
 
 namespace Service.Bitgo.DepositDetector.Grpc.Models
 {
+    [DataContract]
     public class CancelDepositResponse
     {
         [DataMember(Order = 1)] public bool Success { get; set; }

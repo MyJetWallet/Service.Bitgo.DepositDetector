@@ -2,6 +2,7 @@
 
 namespace Service.Bitgo.DepositDetector.Grpc.Models
 {
+    [DataContract]
     public class GetDepositsRequest
     {
         [DataMember(Order = 1)] public long LastId { get; set; }

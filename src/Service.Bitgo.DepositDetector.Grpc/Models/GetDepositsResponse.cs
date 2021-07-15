@@ -4,6 +4,7 @@ using Service.Bitgo.DepositDetector.Domain.Models;
 
 namespace Service.Bitgo.DepositDetector.Grpc.Models
 {
+    [DataContract]
     public class GetDepositsResponse
     {
         [DataMember(Order = 1)] public bool Success { get; set; }
