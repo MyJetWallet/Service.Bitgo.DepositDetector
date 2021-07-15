@@ -84,13 +84,14 @@ namespace Service.Bitgo.DepositDetector.Jobs
                     deposit.Status = DepositStatus.Processed;
                 }
 
-                context.UpdateAsync(deposits);
+                await context.UpdateAsync(deposits);
 
                 deposits.Count.AddToActivityAsTag("deposits-count");
 
                 sw.Stop();
-                _logger.LogInformation("Handled {countTrade} deposits. Time: {timeRangeText}", deposits.Count,
-                    sw.Elapsed.ToString());
+                if (deposits.Count > 0)
+                    _logger.LogInformation("Handled {countTrade} deposits. Time: {timeRangeText}", deposits.Count,
+                        sw.Elapsed.ToString());
             }
             catch (Exception ex)
             {

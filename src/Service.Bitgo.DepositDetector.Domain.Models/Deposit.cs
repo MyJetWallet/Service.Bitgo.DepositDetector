@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 
 namespace Service.Bitgo.DepositDetector.Domain.Models
 {
+    [DataContract]
     public class Deposit
     {
         public Deposit(long id, string brokerId, string clientId, string walletId, string transactionId, double amount,

@@ -77,9 +77,10 @@ namespace Service.Bitgo.DepositDetector.Postgres
             return result;
         }
 
-        public void UpdateAsync(IEnumerable<DepositEntity> entities)
+        public async Task UpdateAsync(IEnumerable<DepositEntity> entities)
         {
             Deposits.UpdateRange(entities);
+            await SaveChangesAsync();
         }
     }
 }
