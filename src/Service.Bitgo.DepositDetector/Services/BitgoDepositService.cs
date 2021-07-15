@@ -134,7 +134,7 @@ namespace Service.Bitgo.DepositDetector.Services
                 deposit.MatchingEngineId = resp.TransactionId;
                 deposit.Status = DepositStatus.Processed;
 
-                await context.UpdateAsync(new List<DepositEntity> {deposit});
+                context.UpdateAsync(new List<DepositEntity> {deposit});
 
                 _logger.LogInformation("Handled deposit manual retry: {depositId}", request.DepositId);
                 return new RetryDepositResponse
@@ -193,7 +193,7 @@ namespace Service.Bitgo.DepositDetector.Services
 
                 deposit.Status = DepositStatus.Cancelled;
 
-                await context.UpdateAsync(new List<DepositEntity> {deposit});
+                context.UpdateAsync(new List<DepositEntity> {deposit});
 
                 _logger.LogInformation("Handled deposit manual cancel: {depositId}", request.DepositId);
                 return new CancelDepositResponse

@@ -68,7 +68,7 @@ namespace Service.Bitgo.DepositDetector.Postgres
             modelBuilder.Entity<DepositEntity>().Property(e => e.EventDate);
 
             modelBuilder.Entity<DepositEntity>().HasIndex(e => e.Status);
-            modelBuilder.Entity<DepositEntity>().HasIndex(e => e.TransactionId);
+            modelBuilder.Entity<DepositEntity>().HasIndex(e => e.TransactionId).IsUnique();
         }
 
         public async Task<int> InsertAsync(DepositEntity entity)
@@ -77,10 +77,9 @@ namespace Service.Bitgo.DepositDetector.Postgres
             return result;
         }
 
-        public async Task<int> UpdateAsync(IEnumerable<DepositEntity> entities)
+        public void UpdateAsync(IEnumerable<DepositEntity> entities)
         {
-            var result = await Deposits.UpsertRange(entities).On(e => e.TransactionId).RunAsync();
-            return result;
+            Deposits.UpdateRange(entities);
         }
     }
 }

@@ -84,7 +84,7 @@ namespace Service.Bitgo.DepositDetector.Jobs
                     deposit.Status = DepositStatus.Processed;
                 }
 
-                await context.UpdateAsync(deposits);
+                context.UpdateAsync(deposits);
 
                 deposits.Count.AddToActivityAsTag("deposits-count");
 
