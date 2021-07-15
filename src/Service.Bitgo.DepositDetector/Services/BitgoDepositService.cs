@@ -58,7 +58,7 @@ namespace Service.Bitgo.DepositDetector.Services
                 {
                     Success = true,
                     DepositCollection = deposits.Select(e => new Deposit(e)).ToList(),
-                    IdForNextQuery = deposits.Select(e => e.Id).Max()
+                    IdForNextQuery = deposits.Count > 0 ? deposits.Select(e => e.Id).Max() : 0
                 };
 
                 response.DepositCollection.Count.AddToActivityAsTag("response-count-items");

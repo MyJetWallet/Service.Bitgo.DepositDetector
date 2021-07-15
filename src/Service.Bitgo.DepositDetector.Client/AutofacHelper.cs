@@ -43,7 +43,7 @@ namespace Service.Bitgo.DepositDetector.Client
         {
             var factory = new BitgoDepositServiceClientFactory(bitgoDepositServiceGrpcServiceUrl);
 
-            builder.RegisterInstance(factory.GetBitgoDepositAddressService()).As<IBitgoDepositService>()
+            builder.RegisterInstance(factory.GetBitgoDepositService()).As<IBitgoDepositService>()
                 .SingleInstance();
         }
     }

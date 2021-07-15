@@ -21,7 +21,7 @@ namespace Service.Bitgo.DepositDetector.Client
             _channel = channel.Intercept(new PrometheusMetricsInterceptor());
         }
 
-        public IBitgoDepositService GetBitgoDepositAddressService()
+        public IBitgoDepositService GetBitgoDepositService()
         {
             return _channel.CreateGrpcService<IBitgoDepositService>();
         }
