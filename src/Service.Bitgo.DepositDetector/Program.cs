@@ -7,8 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.Sdk.Service;
+using MySettingsReader;
 using Service.Bitgo.DepositDetector.Settings;
-using SimpleTrading.SettingsReader;
 
 namespace Service.Bitgo.DepositDetector
 {
@@ -24,7 +24,7 @@ namespace Service.Bitgo.DepositDetector
         {
             return () =>
             {
-                var settings = SettingsReader.ReadSettings<SettingsModel>(SettingsFileName);
+                var settings = SettingsReader.GetSettings<SettingsModel>(SettingsFileName);
                 var value = getter.Invoke(settings);
                 return value;
             };
@@ -34,7 +34,7 @@ namespace Service.Bitgo.DepositDetector
         {
             Console.Title = "MyJetWallet Service.Bitgo.DepositDetector";
 
-            Settings = SettingsReader.ReadSettings<SettingsModel>(SettingsFileName);
+            Settings = SettingsReader.GetSettings<SettingsModel>(SettingsFileName);
 
             using var loggerFactory = LogConfigurator.Configure("MyJetWallet", Settings.SeqServiceUrl);
 

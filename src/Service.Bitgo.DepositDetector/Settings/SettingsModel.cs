@@ -1,8 +1,7 @@
-﻿using SimpleTrading.SettingsReader;
+﻿using MyYamlParser;
 
 namespace Service.Bitgo.DepositDetector.Settings
 {
-    [YamlAttributesOnly]
     public class SettingsModel
     {
         [YamlProperty("BitgoDepositDetector.SeqServiceUrl")]
