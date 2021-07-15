@@ -34,5 +34,14 @@ namespace Service.Bitgo.DepositDetector.Settings
 
         [YamlProperty("BitgoDepositDetector.ZipkinUrl")]
         public string ZipkinUrl { get; set; }
+
+        [YamlProperty("BitgoDepositDetector.PostgresConnectionString")]
+        public string PostgresConnectionString { get; set; }
+
+        [YamlProperty("BitgoDepositDetector.DepositsProcessingIntervalSec")]
+        public int DepositsProcessingIntervalSec { get; set; }
+
+        [YamlProperty("BitgoDepositDetector.DepositsRetriesLimit")]
+        public int DepositsRetriesLimit { get; set; }
     }
 }

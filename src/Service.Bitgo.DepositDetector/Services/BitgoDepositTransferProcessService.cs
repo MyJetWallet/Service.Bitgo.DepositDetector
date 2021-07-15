@@ -2,16 +2,21 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.BitGo;
 using MyJetWallet.BitGo.Settings.Services;
 using MyJetWallet.Sdk.Service;
 using Newtonsoft.Json;
 using OpenTelemetry.Trace;
+using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
+using Service.Bitgo.DepositDetector.Postgres;
+using Service.Bitgo.DepositDetector.Postgres.Models;
 using Service.Bitgo.Webhooks.Domain.Models;
-using Service.ChangeBalanceGateway.Grpc;
-using Service.ChangeBalanceGateway.Grpc.Models;
+
+// ReSharper disable InconsistentLogPropertyNaming
+// ReSharper disable TemplateIsNotCompileTimeConstantProblem
 
 namespace Service.Bitgo.DepositDetector.Services
 {
@@ -19,21 +24,21 @@ namespace Service.Bitgo.DepositDetector.Services
     {
         private readonly IAssetMapper _assetMapper;
         private readonly IBitGoClient _bitgoClient;
-        private readonly ISpotChangeBalanceService _changeBalanceService;
+        private readonly DbContextOptionsBuilder<DatabaseContext> _dbContextOptionsBuilder;
         private readonly ILogger<BitgoDepositTransferProcessService> _logger;
         private readonly IWalletMapper _walletMapper;
 
         public BitgoDepositTransferProcessService(ILogger<BitgoDepositTransferProcessService> logger,
             IAssetMapper assetMapper,
-            ISpotChangeBalanceService changeBalanceService,
             IWalletMapper walletMapper,
-            IBitGoClient bitgoClient)
+            IBitGoClient bitgoClient,
+            DbContextOptionsBuilder<DatabaseContext> dbContextOptionsBuilder)
         {
             _logger = logger;
             _assetMapper = assetMapper;
-            _changeBalanceService = changeBalanceService;
             _walletMapper = walletMapper;
             _bitgoClient = bitgoClient;
+            _dbContextOptionsBuilder = dbContextOptionsBuilder;
         }
 
         public async Task HandledDepositAsync(SignalBitGoTransfer transferId)
@@ -106,30 +111,33 @@ namespace Service.Bitgo.DepositDetector.Services
 
                 var amount = entryGroup.Sum(e => e.Value);
 
-                var request = new BlockchainDepositGrpcRequest
+                try
                 {
-                    WalletId = wallet.WalletId,
-                    ClientId = wallet.ClientId,
-                    Amount = _assetMapper.ConvertAmountFromBitgo(transferId.Coin, amount),
-                    AssetSymbol = assetSymbol,
-                    BrokerId = wallet.BrokerId,
-                    Integration = "BitGo",
-                    TransactionId = $"{transfer.TransferId}:{wallet.WalletId}",
-                    Comment =
-                        $"Bitgo transfer [{transferId.Coin}:{transferId.WalletId}] entry label='{label}', count entry={entryGroup.Count()}",
-                    Txid = transfer.TxId
-                };
-
-                var resp = await _changeBalanceService.BlockchainDepositAsync(request);
-                if (!resp.Result)
+                    await using var ctx = DatabaseContext.Create(_dbContextOptionsBuilder);
+                    await ctx.InsertAsync(new DepositEntity
+                    {
+                        BrokerId = wallet.BrokerId,
+                        WalletId = wallet.WalletId,
+                        ClientId = wallet.ClientId,
+                        TransactionId = $"{transfer.TransferId}:{wallet.WalletId}",
+                        Amount = _assetMapper.ConvertAmountFromBitgo(transferId.Coin, amount),
+                        AssetSymbol = assetSymbol,
+                        Comment =
+                            $"Bitgo transfer [{transferId.Coin}:{transferId.WalletId}] entry label='{label}', count entry={entryGroup.Count()}",
+                        Integration = "BitGo",
+                        Txid = transfer.TxId,
+                        Status = DepositStatus.New,
+                        EventDate = DateTime.UtcNow
+                    });
+                }
+                catch (Exception e)
                 {
-                    _logger.LogError("Cannot deposit to ME. Error: {errorText}", resp.ErrorMessage);
-                    Activity.Current?.SetStatus(Status.Error);
-                    throw new Exception($"Cannot deposit to ME. Error: {resp.ErrorMessage}");
+                    Console.WriteLine(e);
+                    throw;
                 }
             }
 
-            _logger.LogInformation("Transfer from BitGo {transferIdString} is handled", transfer.TransferId);
+            _logger.LogInformation("Deposit request from BitGo {transferIdString} is handled", transfer.TransferId);
         }
     }
 }

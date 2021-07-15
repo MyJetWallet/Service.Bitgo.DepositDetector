@@ -31,6 +31,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.Bitgo.DepositDetector.NoSql", "src\Service.Bitgo.DepositDetector.NoSql\Service.Bitgo.DepositDetector.NoSql.csproj", "{80E4B2B7-4FCA-4C73-B59F-FEF593DF7ABF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service.Bitgo.DepositDetector.Postgres", "src\Service.Bitgo.DepositDetector.Postgres\Service.Bitgo.DepositDetector.Postgres.csproj", "{F91A6B19-2964-454C-8366-D780BC832722}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -65,6 +67,10 @@ Global
 		{80E4B2B7-4FCA-4C73-B59F-FEF593DF7ABF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{80E4B2B7-4FCA-4C73-B59F-FEF593DF7ABF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{80E4B2B7-4FCA-4C73-B59F-FEF593DF7ABF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F91A6B19-2964-454C-8366-D780BC832722}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F91A6B19-2964-454C-8366-D780BC832722}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F91A6B19-2964-454C-8366-D780BC832722}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F91A6B19-2964-454C-8366-D780BC832722}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,6 +82,7 @@ Global
 		{B64315EC-2356-4586-8A89-111D88A942B8} = {EB832FF1-4E01-40ED-BAC4-5ECF70F5C108}
 		{FF868A2B-24FA-42B0-8400-95EDEE689678} = {D11EB899-A148-4C9B-B340-B907EF71C4A2}
 		{80E4B2B7-4FCA-4C73-B59F-FEF593DF7ABF} = {446301A0-97F2-4921-BA0B-32B76039C73B}
+		{F91A6B19-2964-454C-8366-D780BC832722} = {446301A0-97F2-4921-BA0B-32B76039C73B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6BF00C9D-AD55-40F2-8FE3-E5C3559B3E26}
