@@ -101,7 +101,7 @@ namespace Service.Bitgo.DepositDetector.Jobs
             }
 
             _timer.ChangeInterval(
-                TimeSpan.FromMilliseconds(Program.ReloadedSettings(e => e.DepositsProcessingIntervalSec).Invoke()));
+                TimeSpan.FromSeconds(Program.ReloadedSettings(e => e.DepositsProcessingIntervalSec).Invoke()));
         }
 
         public void Start()
