@@ -54,12 +54,12 @@ namespace Service.Bitgo.DepositDetector.Postgres.Migrations
                         .HasColumnType("character varying(64)");
 
                     b.Property<string>("LastError")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
 
                     b.Property<string>("MatchingEngineId")
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<int>("RetriesCount")
                         .ValueGeneratedOnAdd()

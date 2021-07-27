@@ -62,8 +62,8 @@ namespace Service.Bitgo.DepositDetector.Postgres
             modelBuilder.Entity<DepositEntity>().Property(e => e.Integration).HasMaxLength(64);
             modelBuilder.Entity<DepositEntity>().Property(e => e.Txid).HasMaxLength(256);
             modelBuilder.Entity<DepositEntity>().Property(e => e.Status).HasDefaultValue(DepositStatus.New);
-            modelBuilder.Entity<DepositEntity>().Property(e => e.MatchingEngineId).HasMaxLength(64).IsRequired(false);
-            modelBuilder.Entity<DepositEntity>().Property(e => e.LastError).HasMaxLength(256).IsRequired(false);
+            modelBuilder.Entity<DepositEntity>().Property(e => e.MatchingEngineId).HasMaxLength(256).IsRequired(false);
+            modelBuilder.Entity<DepositEntity>().Property(e => e.LastError).HasMaxLength(1024).IsRequired(false);
             modelBuilder.Entity<DepositEntity>().Property(e => e.RetriesCount).HasDefaultValue(0);
             modelBuilder.Entity<DepositEntity>().Property(e => e.EventDate);
 
