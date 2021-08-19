@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.Net.Client" Version="2.38.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.39.0" />
     <PackageReference Include="MyServiceBus.TcpClient" Version="2.4.4" />
     <PackageReference Include="protobuf-net.Grpc" Version="1.0.152" />
   </ItemGroup>
@@ -14,7 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Service.Bitgo.DepositDetector.Client\Service.Bitgo.DepositDetector.Client.csproj" />
     <ProjectReference Include="..\..\src\Service.Bitgo.DepositDetector.Grpc\Service.Bitgo.DepositDetector.Grpc.csproj" />
-    <ProjectReference Include="..\..\src\Service.Bitgo.DepositDetector.NoSql\Service.Bitgo.DepositDetector.NoSql.csproj"/>
+    <ProjectReference Include="..\..\src\Service.Bitgo.DepositDetector.NoSql\Service.Bitgo.DepositDetector.NoSql.csproj" />
   </ItemGroup>
 
 </Project>
