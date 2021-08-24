@@ -38,6 +38,8 @@ namespace Service.Bitgo.DepositDetector.Domain.Models
         {
         }
 
+        public const string TopicName = "jet-wallet-crypto-deposit-operation";
+
         [DataMember(Order = 1)] public long Id { get; set; }
 
         [DataMember(Order = 2)] public string BrokerId { get; set; }

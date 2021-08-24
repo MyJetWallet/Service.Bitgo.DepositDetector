@@ -1,6 +1,10 @@
 ﻿using Autofac;
+using MyJetWallet.Sdk.ServiceBus;
 using MyNoSqlServer.Abstractions;
 using MyNoSqlServer.DataReader;
+using MyServiceBus.Abstractions;
+using MyServiceBus.TcpClient;
+using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
 using Service.Bitgo.DepositDetector.NoSql;
 
@@ -45,6 +49,12 @@ namespace Service.Bitgo.DepositDetector.Client
 
             builder.RegisterInstance(factory.GetBitgoDepositService()).As<IBitgoDepositService>()
                 .SingleInstance();
+        }
+        
+        public static void RegisterDepositOperationSubscriberBatch(this ContainerBuilder builder, MyServiceBusTcpClient serviceBusClient, string queue)
+        {
+            builder.RegisterMyServiceBusSubscriberBatch<Deposit>(serviceBusClient, Deposit.TopicName, queue,
+                TopicQueueType.Permanent);
         }
     }
 }

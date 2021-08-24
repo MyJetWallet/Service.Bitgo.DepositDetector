@@ -3,12 +3,14 @@ using Microsoft.Extensions.Logging;
 using MyJetWallet.BitGo;
 using MyJetWallet.BitGo.Settings.Ioc;
 using MyJetWallet.Sdk.Service;
+using MyJetWallet.Sdk.ServiceBus;
 using MyNoSqlServer.Abstractions;
 using MyNoSqlServer.DataReader;
 using MyNoSqlServer.DataWriter;
 using MyServiceBus.Abstractions;
 using MyServiceBus.TcpClient;
 using Service.AssetsDictionary.Client;
+using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
 using Service.Bitgo.DepositDetector.Jobs;
 using Service.Bitgo.DepositDetector.NoSql;
@@ -68,6 +70,8 @@ namespace Service.Bitgo.DepositDetector.Modules
 
             builder.RegisterSignalBitGoTransferSubscriber(serviceBusClient, "Bitgo-DepositDetector",
                 TopicQueueType.Permanent);
+            
+            builder.RegisterMyServiceBusPublisher<Deposit>(serviceBusClient, Deposit.TopicName, false);
 
             builder
                 .RegisterType<SignalBitGoTransferJob>()

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using DotNetCoreDecorators;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.Sdk.Service;
@@ -20,16 +21,19 @@ namespace Service.Bitgo.DepositDetector.Jobs
         private readonly ISpotChangeBalanceService _changeBalanceService;
         private readonly DbContextOptionsBuilder<DatabaseContext> _dbContextOptionsBuilder;
         private readonly ILogger<DepositsProcessingJob> _logger;
+        private readonly IPublisher<Deposit> _depositPublisher;
 
         private readonly MyTaskTimer _timer;
 
         public DepositsProcessingJob(ILogger<DepositsProcessingJob> logger,
             DbContextOptionsBuilder<DatabaseContext> dbContextOptionsBuilder,
-            ISpotChangeBalanceService changeBalanceService)
+            ISpotChangeBalanceService changeBalanceService, 
+            IPublisher<Deposit> depositPublisher)
         {
             _logger = logger;
             _dbContextOptionsBuilder = dbContextOptionsBuilder;
             _changeBalanceService = changeBalanceService;
+            _depositPublisher = depositPublisher;
             _timer = new MyTaskTimer(typeof(DepositsProcessingJob),
                 TimeSpan.FromSeconds(Program.ReloadedSettings(e => e.DepositsProcessingIntervalSec).Invoke()),
                 logger, DoTime);
@@ -75,13 +79,17 @@ namespace Service.Bitgo.DepositDetector.Jobs
                         deposit.LastError = resp.ErrorMessage;
                         if (deposit.RetriesCount >=
                             Program.ReloadedSettings(e => e.DepositsRetriesLimit).Invoke())
+                        {
                             deposit.Status = DepositStatus.Error;
-
+                            await _depositPublisher.PublishAsync(deposit);
+                        }
                         continue;
                     }
 
                     deposit.MatchingEngineId = resp.TransactionId;
                     deposit.Status = DepositStatus.Processed;
+
+                    await _depositPublisher.PublishAsync(deposit);
                 }
 
                 await context.UpdateAsync(deposits);
