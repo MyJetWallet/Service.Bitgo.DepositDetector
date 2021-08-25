@@ -81,7 +81,7 @@ namespace Service.Bitgo.DepositDetector.Jobs
                             Program.ReloadedSettings(e => e.DepositsRetriesLimit).Invoke())
                         {
                             deposit.Status = DepositStatus.Error;
-                            await _depositPublisher.PublishAsync(deposit);
+                            await _depositPublisher.PublishAsync(new Deposit(deposit));
                         }
                         continue;
                     }
@@ -89,7 +89,7 @@ namespace Service.Bitgo.DepositDetector.Jobs
                     deposit.MatchingEngineId = resp.TransactionId;
                     deposit.Status = DepositStatus.Processed;
 
-                    await _depositPublisher.PublishAsync(deposit);
+                    await _depositPublisher.PublishAsync(new Deposit(deposit));
                 }
 
                 await context.UpdateAsync(deposits);
