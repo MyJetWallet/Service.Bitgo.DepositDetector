@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using MyNoSqlServer.Abstractions;
 using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
@@ -31,6 +32,24 @@ namespace Service.Bitgo.DepositDetector.Client
             }
 
             return await _service.GetDepositAddressAsync(request);
+        }
+
+        public async Task<GetAddressInfoResponse> GetWalletIdByAddressAsync(GetAddressInfoRequest request)
+        {
+            var entities = _dataReader.Get();
+            var entity = entities.FirstOrDefault(e => e.Address == request.Address && e.AssetSymbol == request.AssetSymbol);
+            if (entity == null)
+            {
+                return new GetAddressInfoResponse()
+                {
+                    IsInternalAddress = false
+                };
+            }
+            return new GetAddressInfoResponse()
+            {
+                IsInternalAddress = true,
+                WalletId = entity.WalletId
+            };
         }
     }
 }

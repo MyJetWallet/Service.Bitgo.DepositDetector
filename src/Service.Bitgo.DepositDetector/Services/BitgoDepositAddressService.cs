@@ -87,6 +87,25 @@ namespace Service.Bitgo.DepositDetector.Services
             }
         }
 
+        public async Task<GetAddressInfoResponse> GetWalletIdByAddressAsync(GetAddressInfoRequest request)
+        {
+            var entities = await _dataWriter.GetAsync();
+            var entity = entities.FirstOrDefault(e => e.Address == request.Address && e.AssetSymbol == request.AssetSymbol);
+            if (entity == null)
+            {
+                return new GetAddressInfoResponse()
+                {
+                    IsInternalAddress = false
+                };
+            }
+
+            return new GetAddressInfoResponse()
+            {
+                IsInternalAddress = true,
+                WalletId = entity.WalletId
+            };
+        }
+
         public async Task<string> GenerateOrGetAddressAsync(string bitgoCoin, string bitgoWalletId,
             GetDepositAddressRequest request)
         {

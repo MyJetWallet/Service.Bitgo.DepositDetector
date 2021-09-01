@@ -9,5 +9,8 @@ namespace Service.Bitgo.DepositDetector.Grpc
     {
         [OperationContract]
         Task<GetDepositAddressResponse> GetDepositAddressAsync(GetDepositAddressRequest request);
+        
+        [OperationContract]
+        Task<GetAddressInfoResponse> GetWalletIdByAddressAsync(GetAddressInfoRequest request);
     }
 }
