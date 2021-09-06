@@ -6,9 +6,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.BitGo;
 using MyJetWallet.BitGo.Settings.Services;
+using MyJetWallet.Domain.Assets;
 using MyJetWallet.Sdk.Service;
 using Newtonsoft.Json;
 using OpenTelemetry.Trace;
+using Service.AssetsDictionary.Client;
 using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
 using Service.Bitgo.DepositDetector.Postgres;
@@ -27,18 +29,21 @@ namespace Service.Bitgo.DepositDetector.Services
         private readonly DbContextOptionsBuilder<DatabaseContext> _dbContextOptionsBuilder;
         private readonly ILogger<BitgoDepositTransferProcessService> _logger;
         private readonly IWalletMapper _walletMapper;
+        private readonly IAssetsDictionaryClient _assetsDictionary;
 
         public BitgoDepositTransferProcessService(ILogger<BitgoDepositTransferProcessService> logger,
             IAssetMapper assetMapper,
             IWalletMapper walletMapper,
             IBitGoClient bitgoClient,
-            DbContextOptionsBuilder<DatabaseContext> dbContextOptionsBuilder)
+            DbContextOptionsBuilder<DatabaseContext> dbContextOptionsBuilder, 
+            IAssetsDictionaryClient assetsDictionary)
         {
             _logger = logger;
             _assetMapper = assetMapper;
             _walletMapper = walletMapper;
             _bitgoClient = bitgoClient;
             _dbContextOptionsBuilder = dbContextOptionsBuilder;
+            _assetsDictionary = assetsDictionary;
         }
 
         public async Task HandledDepositAsync(SignalBitGoTransfer transferId)
@@ -109,8 +114,15 @@ namespace Service.Bitgo.DepositDetector.Services
                 wallet.WalletId.AddToActivityAsTag("walletId");
                 wallet.ClientId.AddToActivityAsTag("clientId");
 
-                var amount = entryGroup.Sum(e => e.Value);
-
+                var bitgoAmount = entryGroup.Sum(e => e.Value);
+                var meAmount = _assetMapper.ConvertAmountFromBitgo(transferId.Coin, bitgoAmount);
+                var accuracy = _assetsDictionary.GetAssetById(new AssetIdentity()
+                {
+                    Symbol = transferId.Coin,
+                    BrokerId = wallet.BrokerId
+                }).Accuracy;
+                var roundedAmount = Math.Round(meAmount, accuracy, MidpointRounding.ToNegativeInfinity);
+                
                 try
                 {
                     await using var ctx = DatabaseContext.Create(_dbContextOptionsBuilder);
@@ -120,7 +132,7 @@ namespace Service.Bitgo.DepositDetector.Services
                         WalletId = wallet.WalletId,
                         ClientId = wallet.ClientId,
                         TransactionId = $"{transfer.TransferId}:{wallet.WalletId}",
-                        Amount = _assetMapper.ConvertAmountFromBitgo(transferId.Coin, amount),
+                        Amount = roundedAmount,
                         AssetSymbol = assetSymbol,
                         Comment =
                             $"Bitgo transfer [{transferId.Coin}:{transferId.WalletId}] entry label='{label}', count entry={entryGroup.Count()}",
