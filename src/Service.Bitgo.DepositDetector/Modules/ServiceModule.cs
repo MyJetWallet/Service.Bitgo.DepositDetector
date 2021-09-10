@@ -19,6 +19,8 @@ using Service.Bitgo.DepositDetector.Services;
 using Service.Bitgo.Webhooks.Client;
 using Service.ChangeBalanceGateway.Client;
 
+// ReSharper disable TemplateIsNotCompileTimeConstantProblem
+
 namespace Service.Bitgo.DepositDetector.Modules
 {
     public class ServiceModule : Module
@@ -82,6 +84,7 @@ namespace Service.Bitgo.DepositDetector.Modules
                 .RegisterType<BitgoDepositTransferProcessService>()
                 .As<IBitgoDepositTransferProcessService>();
 
+            builder.RegisterBitgoSettingsWriter(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl));
 
             builder
                 .RegisterInstance(new MyNoSqlServerDataWriter<DepositAddressEntity>(
@@ -91,8 +94,26 @@ namespace Service.Bitgo.DepositDetector.Modules
                 .AutoActivate();
 
             builder
+                .RegisterInstance(new MyNoSqlServerDataWriter<GeneratedDepositAddressEntity>(
+                    Program.ReloadedSettings(e => e.MyNoSqlWriterUrl), GeneratedDepositAddressEntity.TableName, true))
+                .As<IMyNoSqlServerDataWriter<GeneratedDepositAddressEntity>>()
+                .SingleInstance()
+                .AutoActivate();
+
+            builder
                 .RegisterType<DepositsProcessingJob>()
                 .AutoActivate()
+                .SingleInstance()
+                .AsSelf();
+
+            builder
+                .RegisterType<DepositAddressesGenerationJob>()
+                .AutoActivate()
+                .SingleInstance()
+                .AsSelf();
+
+            builder
+                .RegisterType<DepositAddressGeneratorService>()
                 .SingleInstance()
                 .AsSelf();
         }

@@ -42,5 +42,11 @@ namespace Service.Bitgo.DepositDetector.Settings
 
         [YamlProperty("BitgoDepositDetector.DepositsRetriesLimit")]
         public int DepositsRetriesLimit { get; set; }
+
+        [YamlProperty("BitgoDepositDetector.GenerateAddressesIntervalSec")]
+        public int GenerateAddressesIntervalSec { get; set; }
+
+        [YamlProperty("BitgoDepositDetector.PreGeneratedAddressesCount")]
+        public int PreGeneratedAddressesCount { get; set; }
     }
 }

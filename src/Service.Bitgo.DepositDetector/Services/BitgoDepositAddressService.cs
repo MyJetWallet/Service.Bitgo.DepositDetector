@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using MyJetWallet.BitGo;
 using MyJetWallet.BitGo.Settings.Services;
 using MyJetWallet.Domain;
 using MyNoSqlServer.Abstractions;
@@ -11,28 +10,31 @@ using Service.Bitgo.DepositDetector.Domain.Models;
 using Service.Bitgo.DepositDetector.Grpc;
 using Service.Bitgo.DepositDetector.NoSql;
 
+// ReSharper disable InconsistentLogPropertyNaming
+
 namespace Service.Bitgo.DepositDetector.Services
 {
     public class BitgoDepositAddressService : IBitgoDepositAddressService
     {
         private readonly IAssetMapper _assetMapper;
-        private readonly IBitGoClient _bitgoClient;
-        private readonly IMyNoSqlServerDataWriter<DepositAddressEntity> _dataWriter;
+        private readonly IMyNoSqlServerDataWriter<DepositAddressEntity> _addressDataWriter;
+        private readonly IMyNoSqlServerDataWriter<GeneratedDepositAddressEntity> _generatedAddressDataWriter;
         private readonly ILogger<BitgoDepositAddressService> _logger;
         private readonly IWalletMapper _walletMapper;
+        private readonly DepositAddressGeneratorService _depositAddressGeneratorService;
 
-        public BitgoDepositAddressService(
-            ILogger<BitgoDepositAddressService> logger,
-            IAssetMapper assetMapper,
-            IWalletMapper walletMapper,
-            IBitGoClient bitgoClient,
-            IMyNoSqlServerDataWriter<DepositAddressEntity> dataWriter)
+        public BitgoDepositAddressService(IAssetMapper assetMapper,
+            IMyNoSqlServerDataWriter<DepositAddressEntity> addressDataWriter,
+            IMyNoSqlServerDataWriter<GeneratedDepositAddressEntity> generatedAddressDataWriter,
+            ILogger<BitgoDepositAddressService> logger, IWalletMapper walletMapper,
+            DepositAddressGeneratorService depositAddressGeneratorService)
         {
-            _logger = logger;
             _assetMapper = assetMapper;
+            _addressDataWriter = addressDataWriter;
+            _generatedAddressDataWriter = generatedAddressDataWriter;
+            _logger = logger;
             _walletMapper = walletMapper;
-            _bitgoClient = bitgoClient;
-            _dataWriter = dataWriter;
+            _depositAddressGeneratorService = depositAddressGeneratorService;
         }
 
         public async Task<GetDepositAddressResponse> GetDepositAddressAsync(GetDepositAddressRequest request)
@@ -53,22 +55,54 @@ namespace Service.Bitgo.DepositDetector.Services
                     };
                 }
 
-                var address = await GenerateOrGetAddressAsync(bitgoCoin, bitgoWalletId, request);
+                var label = _walletMapper.WalletToBitgoLabel(new JetWalletIdentity
+                {
+                    BrokerId = request.BrokerId,
+                    ClientId = request.ClientId,
+                    WalletId = request.WalletId
+                });
+
+                var (address, error) =
+                    await _depositAddressGeneratorService.GetAddressAsync(bitgoCoin, bitgoWalletId, label);
 
                 if (string.IsNullOrEmpty(address))
                 {
+                    var preGeneratedAddresses = (await _generatedAddressDataWriter.GetAsync(
+                            GeneratedDepositAddressEntity.GeneratePartitionKey(request.BrokerId, bitgoCoin,
+                                bitgoWalletId)))
+                        .ToList();
+
+                    if (preGeneratedAddresses.Count > 0)
+                    {
+                        var preGeneratedAddress = preGeneratedAddresses.First();
+                        (address, error) = await _depositAddressGeneratorService.UpdateAddressLabelAsync(bitgoCoin,
+                            bitgoWalletId,
+                            preGeneratedAddress.Address.BitGoAddressId, label);
+                        if (error == null)
+                            await _generatedAddressDataWriter.DeleteAsync(preGeneratedAddress.PartitionKey,
+                                preGeneratedAddress.RowKey);
+                    }
+                    else
+                    {
+                        (address, error) =
+                            await _depositAddressGeneratorService.GenerateAddressAsync(bitgoCoin, bitgoWalletId, label);
+                    }
+                }
+
+                if (string.IsNullOrEmpty(address) || error != null)
+                {
                     _logger.LogError(
-                        "Cannot process GetDepositAddress. Unable to generate address. Request: {jsonText}",
-                        JsonConvert.SerializeObject(request));
+                        "Cannot process GetDepositAddress. Unable to generate address. Request: {jsonText}. Error: {error}",
+                        JsonConvert.SerializeObject(request), error);
                     return new GetDepositAddressResponse
                     {
                         Error = GetDepositAddressResponse.ErrorCode.AddressNotGenerated
                     };
                 }
 
-                await _dataWriter.InsertOrReplaceAsync(DepositAddressEntity.Create(request.WalletId,
+                await _addressDataWriter.InsertOrReplaceAsync(DepositAddressEntity.Create(request.WalletId,
                     request.AssetSymbol, address));
-                await _dataWriter.CleanAndKeepMaxPartitions(Program.Settings.MaxClientInCache);
+                await _addressDataWriter.CleanAndKeepMaxPartitions(Program.Settings.MaxClientInCache);
 
                 _logger.LogInformation("Handle GetDepositAddress, request: {jsonText}, address: {address}",
                     JsonConvert.SerializeObject(request), address);
@@ -89,8 +123,9 @@ namespace Service.Bitgo.DepositDetector.Services
 
         public async Task<GetAddressInfoResponse> GetWalletIdByAddressAsync(GetAddressInfoRequest request)
         {
-            var entities = await _dataWriter.GetAsync();
-            var entity = entities.FirstOrDefault(e => e.Address == request.Address && e.AssetSymbol == request.AssetSymbol);
+            var entities = await _addressDataWriter.GetAsync();
+            var entity =
+                entities.FirstOrDefault(e => e.Address == request.Address && e.AssetSymbol == request.AssetSymbol);
             if (entity == null)
             {
                 return new GetAddressInfoResponse()
@@ -104,24 +139,6 @@ namespace Service.Bitgo.DepositDetector.Services
                 IsInternalAddress = true,
                 WalletId = entity.WalletId
             };
-        }
-
-        public async Task<string> GenerateOrGetAddressAsync(string bitgoCoin, string bitgoWalletId,
-            GetDepositAddressRequest request)
-        {
-            var label = _walletMapper.WalletToBitgoLabel(new JetWalletIdentity
-            {
-                BrokerId = request.BrokerId,
-                ClientId = request.ClientId,
-                WalletId = request.WalletId
-            });
-
-            var addresses = await _bitgoClient.GetAddressesAsync(bitgoCoin, bitgoWalletId, label, 50);
-            if (addresses.Data.TotalAddressCount > 0) return addresses.Data.Addresses.Last().Address;
-
-            var newAddress = await _bitgoClient.CreateAddressAsync(bitgoCoin, bitgoWalletId, label);
-
-            return newAddress.Data.Address;
         }
     }
 }
