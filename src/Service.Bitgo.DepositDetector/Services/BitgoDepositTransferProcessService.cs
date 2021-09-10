@@ -116,11 +116,13 @@ namespace Service.Bitgo.DepositDetector.Services
 
                 var bitgoAmount = entryGroup.Sum(e => e.Value);
                 var meAmount = _assetMapper.ConvertAmountFromBitgo(transferId.Coin, bitgoAmount);
+                
                 var accuracy = _assetsDictionary.GetAssetById(new AssetIdentity()
                 {
-                    Symbol = transferId.Coin,
+                    Symbol = assetSymbol,
                     BrokerId = wallet.BrokerId
                 }).Accuracy;
+
                 var roundedAmount = Math.Round(meAmount, accuracy, MidpointRounding.ToNegativeInfinity);
                 
                 try
