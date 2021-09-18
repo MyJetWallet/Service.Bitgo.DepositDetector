@@ -26,7 +26,7 @@
     <PackageReference Include="MyJetWallet.Sdk.GrpcSchema" Version="1.0.6" />
     <PackageReference Include="MyJetWallet.Sdk.Service" Version="1.5.5" />
     <PackageReference Include="MyJetWallet.Sdk.ServiceBus" Version="1.0.3" />
-    <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.7.2" />
+    <PackageReference Include="MyJetWallet.Service.AssetsDictionary.Client" Version="1.7.3" />
     <PackageReference Include="MyJetWallet.Service.Bitgo.Webhooks.Client" Version="1.0.1" />
     <PackageReference Include="MyJetWallet.Service.ChangeBalanceGateway.Client" Version="1.7.4" />
     <PackageReference Include="MyNoSqlServer.DataWriter" Version="1.3.1" />
