@@ -15,12 +15,18 @@ namespace Service.Bitgo.DepositDetector.Settings
 
         [YamlProperty("BitgoDepositDetector.ChangeBalanceGatewayGrpcServiceUrl")]
         public string ChangeBalanceGatewayGrpcServiceUrl { get; set; }
+        
+        [YamlProperty("BitgoDepositDetector.BitgoAccessTokenMainNet")]
+        public string BitgoAccessTokenMainNet { get; set; }
 
-        [YamlProperty("BitgoDepositDetector.BitgoAccessTokenReadOnly")]
-        public string BitgoAccessTokenReadOnly { get; set; }
+        [YamlProperty("BitgoDepositDetector.BitgoExpressUrlMainNet")]
+        public string BitgoExpressUrlMainNet { get; set; }
+        
+        [YamlProperty("BitgoDepositDetector.BitgoAccessTokenTestNet")]
+        public string BitgoAccessTokenTestNet { get; set; }
 
-        [YamlProperty("BitgoDepositDetector.BitgoExpressUrl")]
-        public string BitgoExpressUrl { get; set; }
+        [YamlProperty("BitgoDepositDetector.BitgoExpressUrlTestNet")]
+        public string BitgoExpressUrlTestNet { get; set; }
 
         [YamlProperty("BitgoDepositDetector.DefaultBrokerId")]
         public string DefaultBrokerId { get; set; }

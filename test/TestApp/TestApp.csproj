@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.Net.Client" Version="2.39.0" />
-    <PackageReference Include="MyServiceBus.TcpClient" Version="2.4.4" />
+    <PackageReference Include="MyJetWallet.Sdk.NoSql" Version="1.2.0" />
     <PackageReference Include="protobuf-net.Grpc" Version="1.0.152" />
   </ItemGroup>
 

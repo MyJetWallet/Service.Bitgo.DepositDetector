@@ -5,9 +5,11 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MyJetWallet.BitGo;
+using MyJetWallet.BitGo.Settings.NoSql;
 using MyJetWallet.BitGo.Settings.Services;
 using MyJetWallet.Domain.Assets;
 using MyJetWallet.Sdk.Service;
+using MyNoSqlServer.Abstractions;
 using Newtonsoft.Json;
 using OpenTelemetry.Trace;
 using Service.AssetsDictionary.Client;
@@ -30,13 +32,16 @@ namespace Service.Bitgo.DepositDetector.Services
         private readonly ILogger<BitgoDepositTransferProcessService> _logger;
         private readonly IWalletMapper _walletMapper;
         private readonly IAssetsDictionaryClient _assetsDictionary;
+        private readonly IMyNoSqlServerDataReader<BitgoCoinEntity> _bitgoCoinReader;
 
-        public BitgoDepositTransferProcessService(ILogger<BitgoDepositTransferProcessService> logger,
+        public BitgoDepositTransferProcessService(
+            ILogger<BitgoDepositTransferProcessService> logger,
             IAssetMapper assetMapper,
             IWalletMapper walletMapper,
             IBitGoClient bitgoClient,
             DbContextOptionsBuilder<DatabaseContext> dbContextOptionsBuilder, 
-            IAssetsDictionaryClient assetsDictionary)
+            IAssetsDictionaryClient assetsDictionary,
+            IMyNoSqlServerDataReader<BitgoCoinEntity> bitgoCoinReader)
         {
             _logger = logger;
             _assetMapper = assetMapper;
@@ -44,6 +49,7 @@ namespace Service.Bitgo.DepositDetector.Services
             _bitgoClient = bitgoClient;
             _dbContextOptionsBuilder = dbContextOptionsBuilder;
             _assetsDictionary = assetsDictionary;
+            _bitgoCoinReader = bitgoCoinReader;
         }
 
         public async Task HandledDepositAsync(SignalBitGoTransfer transferId)
@@ -62,8 +68,13 @@ namespace Service.Bitgo.DepositDetector.Services
                 return;
             }
 
+            var coin = _bitgoCoinReader.Get(BitgoCoinEntity.GeneratePartitionKey(),
+                BitgoCoinEntity.GenerateRowKey(transferId.Coin));
+
             var transferResp =
-                await _bitgoClient.GetTransferAsync(transferId.Coin, transferId.WalletId, transferId.TransferId);
+                await _bitgoClient.Get(coin.IsMainNet)
+                    .GetTransferAsync(transferId.Coin, transferId.WalletId, transferId.TransferId);
+            
             var transfer = transferResp.Data;
 
             if (transfer == null)

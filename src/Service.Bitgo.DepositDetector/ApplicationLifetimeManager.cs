@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MyJetWallet.Sdk.NoSql;
 using MyJetWallet.Sdk.Service;
 using MyNoSqlServer.DataReader;
 using MyServiceBus.TcpClient;
@@ -12,12 +13,14 @@ namespace Service.Bitgo.DepositDetector
         private readonly DepositsProcessingJob _depositsProcessingJob;
         private readonly DepositAddressesGenerationJob _depositAddressesGenerationJob;
         private readonly ILogger<ApplicationLifetimeManager> _logger;
-        private readonly MyNoSqlTcpClient _myNoSqlClient;
+        private readonly MyNoSqlClientLifeTime _myNoSqlClient;
         private readonly MyServiceBusTcpClient _myServiceBusTcpClient;
 
         public ApplicationLifetimeManager(IHostApplicationLifetime appLifetime,
-            ILogger<ApplicationLifetimeManager> logger, MyNoSqlTcpClient myNoSqlClient,
-            MyServiceBusTcpClient myServiceBusTcpClient, DepositsProcessingJob depositsProcessingJob,
+            ILogger<ApplicationLifetimeManager> logger, 
+            MyNoSqlClientLifeTime myNoSqlClient,
+            MyServiceBusTcpClient myServiceBusTcpClient, 
+            DepositsProcessingJob depositsProcessingJob,
             DepositAddressesGenerationJob depositAddressesGenerationJob) : base(
             appLifetime)
         {

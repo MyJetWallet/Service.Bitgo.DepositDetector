@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using MyJetWallet.BitGo;
 using MyJetWallet.BitGo.Settings.Ioc;
+using MyJetWallet.Sdk.NoSql;
 using MyJetWallet.Sdk.Service;
 using MyJetWallet.Sdk.ServiceBus;
 using MyNoSqlServer.Abstractions;
@@ -29,15 +30,7 @@ namespace Service.Bitgo.DepositDetector.Modules
 
         protected override void Load(ContainerBuilder builder)
         {
-            var myNoSqlClient = new MyNoSqlTcpClient(
-                Program.ReloadedSettings(e => e.MyNoSqlReaderHostPort),
-                ApplicationEnvironment.HostName ??
-                $"{ApplicationEnvironment.AppName}:{ApplicationEnvironment.AppVersion}");
-
-            builder
-                .RegisterInstance(myNoSqlClient)
-                .AsSelf()
-                .SingleInstance();
+            var myNoSqlClient = builder.CreateNoSqlClient(Program.ReloadedSettings(e => e.MyNoSqlReaderHostPort));
 
             builder
                 .RegisterAssetsDictionaryClients(myNoSqlClient);
@@ -46,7 +39,9 @@ namespace Service.Bitgo.DepositDetector.Modules
                 .RegisterSpotChangeBalanceGatewayClient(Program.Settings.ChangeBalanceGatewayGrpcServiceUrl);
 
             var bitgoClient =
-                new BitGoClient(Program.Settings.BitgoAccessTokenReadOnly, Program.Settings.BitgoExpressUrl);
+                new BitGoClient(
+                    Program.Settings.BitgoAccessTokenMainNet, Program.Settings.BitgoExpressUrlMainNet,
+                    Program.Settings.BitgoAccessTokenTestNet, Program.Settings.BitgoExpressUrlTestNet);
 
             builder
                 .RegisterInstance(bitgoClient)
@@ -57,18 +52,9 @@ namespace Service.Bitgo.DepositDetector.Modules
 
             ServiceBusLogger = Program.LogFactory.CreateLogger(nameof(MyServiceBusTcpClient));
 
-            var serviceBusClient = new MyServiceBusTcpClient(Program.ReloadedSettings(e => e.SpotServiceBusHostPort),
-                ApplicationEnvironment.HostName);
-            serviceBusClient.Log.AddLogException(ex =>
-                ServiceBusLogger.LogInformation(ex, "Exception in MyServiceBusTcpClient"));
-            serviceBusClient.Log.AddLogInfo(info => ServiceBusLogger.LogDebug($"MyServiceBusTcpClient[info]: {info}"));
-            serviceBusClient.SocketLogs.AddLogInfo((context, msg) =>
-                ServiceBusLogger.LogInformation(
-                    $"MyServiceBusTcpClient[Socket {context?.Id}|{context?.ContextName}|{context?.Inited}][Info] {msg}"));
-            serviceBusClient.SocketLogs.AddLogException((context, exception) =>
-                ServiceBusLogger.LogInformation(exception,
-                    $"MyServiceBusTcpClient[Socket {context?.Id}|{context?.ContextName}|{context?.Inited}][Exception] {exception.Message}"));
-            builder.RegisterInstance(serviceBusClient).AsSelf().SingleInstance();
+            var serviceBusClient = builder.RegisterMyServiceBusTcpClient(
+                Program.ReloadedSettings(e => e.SpotServiceBusHostPort),
+                ApplicationEnvironment.HostName, Program.LogFactory);
 
             builder.RegisterSignalBitGoTransferSubscriber(serviceBusClient, "Bitgo-DepositDetector",
                 TopicQueueType.Permanent);
@@ -86,20 +72,12 @@ namespace Service.Bitgo.DepositDetector.Modules
 
             builder.RegisterBitgoSettingsWriter(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl));
 
+            builder.RegisterMyNoSqlWriter<DepositAddressEntity>(
+                Program.ReloadedSettings(e => e.MyNoSqlWriterUrl), DepositAddressEntity.TableName, true);
+            
             builder
-                .RegisterInstance(new MyNoSqlServerDataWriter<DepositAddressEntity>(
-                    Program.ReloadedSettings(e => e.MyNoSqlWriterUrl), DepositAddressEntity.TableName, true))
-                .As<IMyNoSqlServerDataWriter<DepositAddressEntity>>()
-                .SingleInstance()
-                .AutoActivate();
-
-            builder
-                .RegisterInstance(new MyNoSqlServerDataWriter<GeneratedDepositAddressEntity>(
-                    Program.ReloadedSettings(e => e.MyNoSqlWriterUrl), GeneratedDepositAddressEntity.TableName, true))
-                .As<IMyNoSqlServerDataWriter<GeneratedDepositAddressEntity>>()
-                .SingleInstance()
-                .AutoActivate();
-
+                .RegisterMyNoSqlWriter<GeneratedDepositAddressEntity>(Program.ReloadedSettings(e => e.MyNoSqlWriterUrl), GeneratedDepositAddressEntity.TableName, true);
+            
             builder
                 .RegisterType<DepositsProcessingJob>()
                 .AutoActivate()
